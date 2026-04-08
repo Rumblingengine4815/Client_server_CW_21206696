@@ -23,8 +23,7 @@ This implementation includes:
 - Custom exception classes and exception mappers
 - Global safety-net mapper for unexpected errors
 
-## 1.1 Folder Structure (what examiner expects)
-Use this structure in your GitHub repo:
+## 1.1 Folder Structure 
 
 - src/main/java/com/smartcampusapi/config
 - src/main/java/com/smartcampusapi/dao
@@ -35,8 +34,7 @@ Use this structure in your GitHub repo:
 - pom.xml
 - README.md (must include report answers)
 
-Important submission rule:
-- Submit a public GitHub repository link (not a zip).
+
 
 ## 2. Build and Run
 
@@ -159,65 +157,3 @@ What to show in video from Postman:
 - Three custom error scenarios: 409, 422, 403
 - Clear status codes in each response
 
-## 4. Report Answers (Coursework Questions)
-
-### Part 1.1: JAX-RS Resource lifecycle
-By default, JAX-RS creates a new instance of a resource class per request (request-scoped), unless explicitly configured as singleton. This reduces shared mutable state issues inside resource classes. For in-memory maps/lists, thread-safe structures are still required because many requests are served concurrently. In this project, concurrent collections are used in DAO classes to avoid race conditions and data loss.
-
-### Part 1.2: Why hypermedia/HATEOAS matters
-Hypermedia exposes navigational links in responses so clients can discover next actions dynamically rather than hardcoding every endpoint from static docs. This improves API evolvability, reduces client breakage when URI structures change, and makes integrations more self-describing.
-
-### Part 2.1: Returning IDs vs full room objects
-Returning only IDs reduces payload size and bandwidth usage, which is efficient for large lists. Returning full objects reduces follow-up calls and can simplify client-side rendering. A practical approach is returning summaries for collections and full objects for detail endpoints.
-
-### Part 2.2: Is DELETE idempotent?
-Yes. Deleting a room changes state the first time only. Repeating the same DELETE request leaves server state unchanged (room remains absent). The second call may return 404, but idempotency concerns state, not identical status code responses.
-
-### Part 3.1: @Consumes JSON behavior for other media types
-@Consumes(MediaType.APPLICATION_JSON) tells JAX-RS to accept only JSON for that method. If a client sends text/plain or application/xml, JAX-RS cannot find a compatible message body reader and returns 415 Unsupported Media Type.
-
-### Part 3.2: Query parameter vs path for filtering
-Query parameters are better for optional filtering/search on collections because they do not alter resource identity. /sensors remains the same resource collection, while type is a filter criterion. Path segments are better for hierarchical identity (for example /rooms/{id}), not optional search variations.
-
-### Part 4.1: Sub-resource locator benefits
-Sub-resource locators split nested logic into focused classes. This improves readability, testability, and maintainability in larger APIs. It avoids large controller classes containing every nested route and supports cleaner separation of responsibilities.
-
-### Part 5.2: Why 422 for missing linked room inside valid JSON
-422 is semantically accurate when request syntax is valid JSON but business/domain validation fails (linked roomId does not exist). 404 is more suitable when the target request URI itself is missing, not when a referenced field inside payload is invalid.
-
-### Part 5.4: Cybersecurity risk of exposing stack traces
-Stack traces can leak internal package names, class structures, line numbers, server frameworks, and library versions. Attackers can use this information for fingerprinting and targeted exploits. Returning sanitized generic errors reduces reconnaissance opportunities.
-
-## 5. Exception Handling Implemented
-- 409 Conflict: RoomNotEmptyException
-- 422 Unprocessable Entity: LinkedResourceNotFoundException
-- 403 Forbidden: SensorUnavailableException
-- 500 Internal Server Error: GlobalExceptionMapper (catch-all)
-
-## 6. Video Demonstration Plan (10 minutes)
-This should be one single video (maximum 10 minutes), split into short sections per task.
-
-1. Start server and show base URL.
-2. Call discovery endpoint.
-3. Create room and list rooms.
-4. Create sensor linked to room.
-5. Filter sensors by type.
-6. Post reading and show sensor currentValue update indirectly.
-7. Show readings history endpoint.
-8. Attempt forbidden/invalid actions to show 409, 422, and 403.
-9. Explain global 500 mapper briefly.
-10. Close by summarizing REST design choices.
-
-Recommended section timings for one video:
-- Part 1 setup and discovery: 1 minute
-- Part 2 rooms: 2 minutes
-- Part 3 sensors and filtering: 2 minutes
-- Part 4 sub-resource readings: 2 minutes
-- Part 5 exception handling: 2 minutes
-- Conclusion and repository walkthrough: 1 minute
-
-## 7. Submission Checklist
-- Public GitHub repository link
-- README.md with build/run steps and report answers
-- One video file (or one video link) covering all tasks
-- Blackboard submission completed before deadline
