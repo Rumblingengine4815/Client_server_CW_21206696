@@ -38,7 +38,7 @@ This implementation includes:
 
 ## 2. Build and Run
 
-### Option A: NetBeans (recommended for this coursework)
+### Option A: NetBeans
 1. Open NetBeans.
 2. File -> Open Project -> choose SmartCampusAPI folder.
 3. Wait for Maven dependencies to load.
