@@ -1,12 +1,18 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+
 package com.smartcampusapi.resource;
 
-import com.smartcampusapi.dao.RoomDAO;
-import com.smartcampusapi.dao.SensorDAO;
-import com.smartcampusapi.exception.LinkedResourceNotFoundException;
-import com.smartcampusapi.model.Room;
-import com.smartcampusapi.model.Sensor;
+/**
+ *
+ * @author User
+ */
+
 import java.net.URI;
 import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -20,6 +26,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import com.smartcampusapi.dao.RoomDAO;
+import com.smartcampusapi.dao.SensorDAO;
+import com.smartcampusapi.exception.LinkedResourceNotFoundException;
+import com.smartcampusapi.model.Room;
+import com.smartcampusapi.model.Sensor;
 
 @Path("/sensors")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,15 +49,15 @@ public class SensorResource {
     @POST
     public Response createSensor(Sensor sensor, @Context UriInfo uriInfo) {
         if (sensor == null || sensor.getId() == null || sensor.getId().isBlank()) {
-            throw new WebApplicationException("Sensor id is required", Response.Status.BAD_REQUEST);
+            throw new WebApplicationException("Sensor id is required in the request body.", Response.Status.BAD_REQUEST);
         }
         if (sensor.getRoomId() == null || sensor.getRoomId().isBlank()) {
-            throw new WebApplicationException("roomId is required", Response.Status.BAD_REQUEST);
+            throw new WebApplicationException("roomId is required in the request body.", Response.Status.BAD_REQUEST);
         }
 
         Room room = RoomDAO.getRoom(sensor.getRoomId());
         if (room == null) {
-            throw new LinkedResourceNotFoundException("No sensor Room doesn't exist: " + sensor.getRoomId());
+            throw new LinkedResourceNotFoundException("Room with id '" + sensor.getRoomId() + "' does not exist. Cannot assign sensor.");
         }
 
         if (sensor.getStatus() == null || sensor.getStatus().isBlank()) {
@@ -64,7 +76,7 @@ public class SensorResource {
     public Sensor getSensor(@PathParam("sensorId") String sensorId) {
         Sensor sensor = SensorDAO.getSensor(sensorId);
         if (sensor == null) {
-            throw new WebApplicationException("Sensor not found", Response.Status.NOT_FOUND);
+            throw new LinkedResourceNotFoundException("Sensor with id '" + sensorId + "' not found.");
         }
         return sensor;
     }
@@ -74,14 +86,12 @@ public class SensorResource {
     public Response deleteSensor(@PathParam("sensorId") String sensorId) {
         Sensor deleted = SensorDAO.deleteSensor(sensorId);
         if (deleted == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new LinkedResourceNotFoundException("Sensor with id '" + sensorId + "' not found. Cannot delete.");
         }
-
         Room room = RoomDAO.getRoom(deleted.getRoomId());
         if (room != null) {
             room.getSensorIds().remove(sensorId);
         }
-
         return Response.noContent().build();
     }
 

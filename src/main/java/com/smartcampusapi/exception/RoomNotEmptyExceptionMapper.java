@@ -7,7 +7,6 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class RoomNotEmptyExceptionMapper implements ExceptionMapper<RoomNotEmptyException> {
-
     @Override
     public Response toResponse(RoomNotEmptyException exception) {
         ApiError error = new ApiError(409, "Conflict", exception.getMessage());

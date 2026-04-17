@@ -8,11 +8,9 @@ package com.smartcampusapi.resource;
  *
  * @author User
  */
-import com.smartcampusapi.dao.RoomDAO;
-import com.smartcampusapi.exception.RoomNotEmptyException;
-import com.smartcampusapi.model.Room;
 import java.net.URI;
 import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -25,6 +23,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import com.smartcampusapi.dao.RoomDAO;
+import com.smartcampusapi.exception.LinkedResourceNotFoundException;
+import com.smartcampusapi.exception.RoomNotEmptyException;
+import com.smartcampusapi.model.Room;
 
 @Path("/rooms")
 @Produces(MediaType.APPLICATION_JSON)
@@ -39,9 +42,12 @@ public class RoomResource {
 	@POST
 	public Response createRoom(Room room, @Context UriInfo uriInfo) {
 		if (room == null || room.getId() == null || room.getId().isBlank()) {
-			throw new WebApplicationException("Room id is required", Response.Status.BAD_REQUEST);
+			throw new WebApplicationException("Room id is required in the request body. Please try again", Response.Status.BAD_REQUEST);
 		}
-
+		// Checking for duplicate id for rooms 
+		if (RoomDAO.getRoom(room.getId()) != null) {
+			throw new WebApplicationException("A room with this id already exists. Please try again", Response.Status.CONFLICT);
+		}
 		RoomDAO.createRoom(room);
 		URI location = uriInfo.getAbsolutePathBuilder().path(room.getId()).build();
 		return Response.created(location).entity(room).build();
@@ -52,7 +58,7 @@ public class RoomResource {
 	public Room getRoom(@PathParam("roomId") String roomId) {
 		Room room = RoomDAO.getRoom(roomId);
 		if (room == null) {
-			throw new WebApplicationException("Room not found", Response.Status.NOT_FOUND);
+			throw new LinkedResourceNotFoundException("Room with id '" + roomId + "' was not found.");
 		}
 		return room;
 	}
@@ -62,12 +68,11 @@ public class RoomResource {
 	public Response deleteRoom(@PathParam("roomId") String roomId) {
 		Room room = RoomDAO.getRoom(roomId);
 		if (room == null) {
-			return Response.status(Response.Status.NOT_FOUND).build();
+			throw new LinkedResourceNotFoundException("Room with id '" + roomId + "' was not found.");
 		}
 		if (!room.getSensorIds().isEmpty()) {
-			throw new RoomNotEmptyException("Room " + roomId + " still has active sensors");
+			throw new RoomNotEmptyException("Room " + roomId + " still has usable active sensors");
 		}
-
 		RoomDAO.deleteRoom(roomId);
 		return Response.noContent().build();
 	}

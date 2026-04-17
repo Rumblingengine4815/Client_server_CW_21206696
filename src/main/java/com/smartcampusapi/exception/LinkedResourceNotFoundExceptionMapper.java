@@ -1,5 +1,10 @@
 package com.smartcampusapi.exception;
 
+/**
+ *
+ * @author User
+ */
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
