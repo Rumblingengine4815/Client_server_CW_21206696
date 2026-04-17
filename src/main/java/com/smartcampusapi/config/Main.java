@@ -21,6 +21,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         ResourceConfig config = new ResourceConfig().packages("com.smartcampusapi");
 
+        @SuppressWarnings("unused")
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(
                 URI.create(BASE_URI), config
         );
