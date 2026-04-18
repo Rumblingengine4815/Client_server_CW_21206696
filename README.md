@@ -1,4 +1,7 @@
 # Smart Campus API (5COSC022W Coursework)
+Name: Lorion Surjith Ravidradasan
+ID: 212066096
+IIT ID : 20230198
 
 ## 1. API Overview
 This project implements a JAX-RS RESTful API for Smart Campus Room and Sensor Management.
@@ -16,12 +19,12 @@ Main collections:
 - /sensors
 - /sensors/{sensorId}/readings
 
-This implementation includes:
+This coursework includes:
 - Resource-based endpoint design
 - Query filtering (sensor type)
 - Sub-resource locator for readings
 - Custom exception classes and exception mappers
-- Global safety-net mapper for unexpected errors
+- Global safety-net mapper for unexpected errors in case.
 
 ## 1.1 Folder Structure 
 
@@ -46,70 +49,11 @@ This implementation includes:
 5. Right click com.smartcampusapi.config.Main -> Run File.
 6. Confirm server starts at http://localhost:8080/api/v1/
 
-If NetBeans shows Maven/JDK errors, set JDK 17 in:
-- Tools -> Java Platforms
-- Project Properties -> Libraries -> Java Platform = JDK 17
 
-### Option B: Command line (Maven)
-1. Install JDK 17 and Maven.
-2. Ensure JAVA_HOME points to your JDK folder (example shown below).
-3. Run:
-  set JAVA_HOME=C:\Users\User\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.6.7-hotspot
-   mvn clean compile
-4. Start server with:
-   mvn exec:java
 
-## 3. Sample curl commands (for demo video)
+## 3.1 Postman Testing
 
-1. Discovery endpoint:
-```bash
-curl -X GET http://localhost:8080/api/v1/
-```
-
-2. Create a room:
-```bash
-curl -X POST http://localhost:8080/api/v1/rooms \
-  -H "Content-Type: application/json" \
-  -d "{\"id\":\"LIB-301\",\"name\":\"Library Quiet Study\",\"capacity\":120}"
-```
-
-3. List rooms:
-```bash
-curl -X GET http://localhost:8080/api/v1/rooms
-```
-
-4. Create a sensor linked to room:
-```bash
-curl -X POST http://localhost:8080/api/v1/sensors \
-  -H "Content-Type: application/json" \
-  -d "{\"id\":\"CO2-001\",\"type\":\"CO2\",\"status\":\"ACTIVE\",\"roomId\":\"LIB-301\"}"
-```
-
-5. Filter sensors by type:
-```bash
-curl -X GET "http://localhost:8080/api/v1/sensors?type=CO2"
-```
-
-6. Add reading for sensor:
-```bash
-curl -X POST http://localhost:8080/api/v1/sensors/CO2-001/readings \
-  -H "Content-Type: application/json" \
-  -d "{\"value\":540.7}"
-```
-
-7. View sensor reading history:
-```bash
-curl -X GET http://localhost:8080/api/v1/sensors/CO2-001/readings
-```
-
-8. Try deleting room with active sensor (expected 409):
-```bash
-curl -X DELETE http://localhost:8080/api/v1/rooms/LIB-301
-```
-
-## 3.1 Postman Testing (recommended for marking and video)
-
-Create a Postman collection named SmartCampusAPI with this request order:
+Creating a Postman collection named SmartCampusAPI with this request order:
 
 1. GET {{baseUrl}}/
 2. POST {{baseUrl}}/rooms
@@ -125,35 +69,43 @@ Create a Postman collection named SmartCampusAPI with this request order:
 Postman environment variable:
 - baseUrl = http://localhost:8080/api/v1
 
-Useful Postman Tests tab snippets:
+## 4 Report Questions
 
-Status code check:
-```javascript
-pm.test("Status code is expected", function () {
-  pm.response.to.have.status(201);
-});
-```
+## Part 1.1: JAX-RS Resource Lifecycle
 
-JSON field check:
-```javascript
-pm.test("Response has id", function () {
-  const jsonData = pm.response.json();
-  pm.expect(jsonData.id).to.exist;
-});
-```
+JAX-RS doesn't treat resource classes as global singletons. That means the resource class itself shouldn't hold application data. Maps and lists need to be thread-safe if multiple requests access them at the same time. In this project, the DAO layer uses concurrent collections so data doesn't get corrupted under concurrent access.
 
-Error response check (example for 409):
-```javascript
-pm.test("Room delete blocked", function () {
-  pm.response.to.have.status(409);
-  const jsonData = pm.response.json();
-  pm.expect(jsonData.error).to.eql("Conflict");
-});
-```
+## Part 1.2: Hypermedia
 
-What to show in video from Postman:
-- Collection run order
-- Request body and response body for success cases
-- Three custom error scenarios: 409, 422, 403
-- Clear status codes in each response
+Hypermedia is useful because it gives clients links in the response so they don't have to rely only on static documentation. If the API structure changes, the client can still find related resources through the links. It's a more RESTful way of designing APIs and easier.
+
+## Part 2.1: Returning IDs vs Full Room Objects
+
+Returning only IDs keeps the response smaller, but the client has to make more requests to get the full data. Returning full objects is easier for the client but makes the response bigger. For our coursework, returning full objects for detail views made the most sensible.
+
+## Part 2.2: DELETE Idempotency
+
+DELETE is idempotent because repeating the same request doesn't keep changing the server state. If a room is deleted once, sending the same DELETE again doesn't delete anything new. In this implementation, the first request removes the room, and later requests will fail because it's already gone.
+
+## Part 3.1: @Consumes(MediaType.APPLICATION_JSON)
+
+`@Consumes(MediaType.APPLICATION_JSON)` means the endpoint only takes JSON. If a client sends `text/plain` or `application/xml`, JAX-RS won't match that request, so it returns an unsupported media type error. This keeps the API predictable and safe.
+
+## Part 3.2: QueryParam vs Path Segment for Filtering
+
+Using `?type=CO2` is better for filtering because the main resource stays the same and only the search criteria changes. A path-based version like `/sensors/type/CO2` can work, but it's not as flexible if more filters are added later. Query parameters fit filtering much better.
+
+## Part 4.1: Sub-Resource Locator Benefits
+
+Sub-resource locators keep things clean by splitting nested logic into separate classes. Instead of one huge controller, sensor readings get their own class. That makes the code easier to read, test, and extend later.
+
+## Part 5.2: Why 422 for Missing Linked Resource
+
+422 is better than 404 when the JSON is valid but one of the values inside doesn't point to a real resource. The server understands the request, but it can't process it because the linked resource doesn't exist.
+
+## Part 5.4: Security Risk of Exposing Stack Traces
+
+Stack traces shouldn't be shown to API users because they reveal internal details. An attacker could learn class names, file paths, library versions, and other stuff that makes targeting attacks easier. Generic error messages are much safer.
+
+
 
