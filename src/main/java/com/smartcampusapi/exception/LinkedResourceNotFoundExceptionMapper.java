@@ -15,7 +15,7 @@ public class LinkedResourceNotFoundExceptionMapper implements ExceptionMapper<Li
 
     @Override
     public Response toResponse(LinkedResourceNotFoundException exception) {
-        ApiError error = new ApiError(422, "Unprocessable Entity", exception.getMessage());
+        ApiError error = new ApiError(422, "This process is not processable. See Error and try again", exception.getMessage());
         return Response.status(422)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(error)
