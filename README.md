@@ -71,41 +71,40 @@ Postman environment variable:
 
 ## 4 Report Questions
 
-## Part 1.1: JAX-RS Resource Lifecycle
+Smart Campus API - Technical Report (5COSC022W)
 
-JAX-RS doesn't treat resource classes as global singletons. That means the resource class itself shouldn't hold application data. Maps and lists need to be thread-safe if multiple requests access them at the same time. In this project, the DAO layer uses concurrent collections so data doesn't get corrupted under concurrent access.
+### Part 1.1: Lifecycle of JAX-RS resources
 
-## Part 1.2: Hypermedia
+A JAX-RS implementation typically instantiates resource classes per request rather than registering them as a singleton in the Application scope. Therefore, resource classes have to be thread-safe: data mutable on the resource itself would cause race conditions. Any state shared between requests has to be stored in distinct components such as DAOs or Services which were explicitly made concurrent. The data-access layer uses concurrent data-structures, preserving data-consistency across concurrent requests without the need for complex request handling logic.
 
-Hypermedia is useful because it gives clients links in the response so they don't have to rely only on static documentation. If the API structure changes, the client can still find related resources through the links. It's a more RESTful way of designing APIs and easier.
+### Part 1.2: Hypermedia (HATEOAS)
 
-## Part 2.1: Returning IDs vs Full Room Objects
+Adding hypermedia controls to a response enables API consumers to programmatically discover which actions are available, reducing the need for external documentation. This pattern is commonly known as HATEOAS and improves coupling between server and client. Any change of the API might not necessarily have to be reflected in the client if clients were following HATEOAS links rather than assuming static structure of response. For these reasons, navigation links are included in response when possible and useful, for enabling clients discovering of useful states.
 
-Returning only IDs keeps the response smaller, but the client has to make more requests to get the full data. Returning full objects is easier for the client but makes the response bigger. For our coursework, returning full objects for detail views made the most sensible.
+### Part 2.1: Returning identifiers vs. Returning full representations
 
-## Part 2.2: DELETE Idempotency
+ Returning identifiers instead of full representation reduces the payload size. The client has then to make another request, and thus costs bandwidth and network round-trips. This is appropriate when the client does not necessarily require full data or when bandwidth is a constraint. Alternatively, returning the entire object graph provides more convenience and potentially better coupling with client code. The choice is to return the full Room representation in detail views as the case-study prioritized simplicity of development and testability. A hybrid model would be preferable in production.
 
-DELETE is idempotent because repeating the same request doesn't keep changing the server state. If a room is deleted once, sending the same DELETE again doesn't delete anything new. In this implementation, the first request removes the room, and later requests will fail because it's already gone.
+### Part 2.2: Idempotency of DELETE
 
-## Part 3.1: @Consumes(MediaType.APPLICATION_JSON)
+ The HTTP DELETE method should be idempotent. It is defined that, after an initial successful request, subsequent requests should not change the resource further. A DELETE call once made removes the resource. Further DELETE calls should simply report that the resource has already been deleted, ideally returning 404 Not Found if appropriate or 204 No Content if the response semantics are to communicate success. This project implements the ideal behavior; the first call to DELETE will indeed delete the resource, while subsequent calls return a 404 error, to notify that the requested resource is no longer available.
 
-`@Consumes(MediaType.APPLICATION_JSON)` means the endpoint only takes JSON. If a client sends `text/plain` or `application/xml`, JAX-RS won't match that request, so it returns an unsupported media type error. This keeps the API predictable and safe.
+### Part 3.1: @Consumes(MediaType.APPLICATION_JSON) and Content Negotiation
 
-## Part 3.2: QueryParam vs Path Segment for Filtering
+ A method annotated with @Consumes(MediaType.APPLICATION_JSON) tells the JAX-RS runtime that the method can only accept requests with a Content-Type of application/json. If a client attempts to invoke such method using another Content-Type, JAX-RS would not be able to route the request to that method. The runtime either tries to find an alternative method that can satisfy the request or returns a 415 Unsupported Media Type error. This helps enforce that the request body is parsable and adheres to the schema used by the application.
 
-Using `?type=CO2` is better for filtering because the main resource stays the same and only the search criteria changes. A path-based version like `/sensors/type/CO2` can work, but it's not as flexible if more filters are added later. Query parameters fit filtering much better.
+### Part 3.2: Query Parameters vs. Path Segments for Filtering
 
-## Part 4.1: Sub-Resource Locator Benefits
+ Query parameters are the most natural choice for filtering collections. When asking for a subset of resources that are already represented by another resource, a client is essentially querying an existing resource collection. E.g., GET /sensors?type=CO2&limit=50. The latter alternative of path segments would more accurately identify a fixed sub-resource, such as /rooms/{id}/sensors. This query-parameter approach will remain more extendable than a path-segment based one if additional filters needed.
 
-Sub-resource locators keep things clean by splitting nested logic into separate classes. Instead of one huge controller, sensor readings get their own class. That makes the code easier to read, test, and extend later.
+### Part 4.1: Benefits of sub-resource locators
 
-## Part 5.2: Why 422 for Missing Linked Resource
+ Sub-resource locators help to manage and break down resources into their constituents without making the main resource class cumbersome. It is desirable to isolate logical components of resource representations into dedicated classes to improve unit testability and manageability. Unit tests can target specific sub-resources in isolation and a clear distinction of what is the role of each handler becomes apparent with sub-resource locators. This project follows this design with dedicated resource methods for retrieving sensor readings.
 
-422 is better than 404 when the JSON is valid but one of the values inside doesn't point to a real resource. The server understands the request, but it can't process it because the linked resource doesn't exist.
+### Part 5.2: 422 Unprocessable Entity for faulty links
 
-## Part 5.4: Security Risk of Exposing Stack Traces
+ A 422 status indicates that the server understands the content of the request body, but it could not process the contained instructions due to semantic errors within the entity, e.g. When a resource cannot be created because its required referenced resources do not exist. A 404 Not Found status indicates that the target resource cannot be found, or endpoint that the client asked for does not exist. This project chooses to return 422 as the body of the request could technically be processed.
 
-Stack traces shouldn't be shown to API users because they reveal internal details. An attacker could learn class names, file paths, library versions, and other stuff that makes targeting attacks easier. Generic error messages are much safer.
+### Part 5.4: Risk of exposing stack traces in a response
 
-
-
+ Full stack traces provide very detailed information about the server implementation which could be very helpful to a potential attacker to craft malicious requests targeting your API. Stack traces must only be exposed in development environment, not in production; preferably as logs that only authorized persons have access to. Including a transaction-id in the response error will help technical support to locate full stack trace in logs.
