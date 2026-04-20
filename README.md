@@ -33,22 +33,56 @@ This coursework includes:
 - src/main/java/com/smartcampusapi/model
 - src/main/java/com/smartcampusapi/resource
 - src/main/java/com/smartcampusapi/exception
-- src/main/java/com/smartcampusapi/filter (optional)
+- src/main/java/com/smartcampusapi/filter 
 - pom.xml
-- README.md (must include report answers)
+- README.md 
 
 
 
 ## 2. Build and Run
 
-### Option A: NetBeans
-1. Open NetBeans.
+### Instructions
+1. Open NetBeans. Do this "mvn clean package" if needed as not to run any other file
 2. File -> Open Project -> choose SmartCampusAPI folder.
 3. Wait for Maven dependencies to load.
 4. In Projects panel, expand Source Packages.
 5. Right click com.smartcampusapi.config.Main -> Run File.
 6. Confirm server starts at http://localhost:8080/api/v1/
 
+Sample curl Commands
+
+### Create a Room
+
+
+curl -X POST http://localhost:8080/api/v1/rooms \  -H "Content-Type: application/json" \  -d '{"id":"R1","name":"Lecture Theatre 1","capacity":120}'
+
+
+### Create a Sensor
+
+
+curl -X POST http://localhost:8080/api/v1/sensors \  -H "Content-Type: application/json" \  -d '{"id":"S1","type":"CO2","roomId":"R1","status":"ACTIVE","currentValue":0.0}'
+
+
+### Add a Sensor Reading
+
+
+curl -X POST http://localhost:8080/api/v1/sensors/S1/readings \  -H "Content-Type: application/json" \  -d '{"id":"SR1","value":23.5}'
+
+### List All Rooms
+
+curl http://localhost:8080/api/v1/rooms
+
+### List All Sensors
+
+curl http://localhost:8080/api/v1/sensors
+
+### Delete Sensor
+
+curl -X DELETE http://localhost:8080/api/v1/sensors/S1
+
+### Delete Room
+
+curl -X DELETE http://localhost:8080/api/v1/rooms/R1
 
 
 ## 3.1 Postman Testing
