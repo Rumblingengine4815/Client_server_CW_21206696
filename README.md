@@ -129,7 +129,7 @@ Adding hypermedia controls to a response enables API consumers to programmatical
 
 ### Part 3.2: Query Parameters vs. Path Segments for Filtering
 
- Query parameters are the most natural choice for filtering collections. When asking for a subset of resources that are already represented by another resource, a client is essentially querying an existing resource collection. E.g., GET /sensors?type=CO2&limit=50. The latter alternative of path segments would more accurately identify a fixed sub-resource, such as /rooms/{id}/sensors. This query-parameter approach will remain more extendable than a path-segment based one if additional filters needed.
+ Query parameters are the most natural choice for filtering collections. When asking for a subset of resources that are already represented by another resource, a client is essentially querying an existing resource collection. E.g., GET /sensors?type=CO2. The latter alternative of path segments would more accurately identify a fixed sub-resource, such as /rooms/{id}/sensors. This query-parameter approach will remain more extendable than a path-segment based one if additional filters needed.
 
 ### Part 4.1: Benefits of sub-resource locators
 
