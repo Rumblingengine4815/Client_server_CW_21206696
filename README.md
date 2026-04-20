@@ -51,38 +51,86 @@ This coursework includes:
 
 Sample curl Commands
 
+# Smart Campus API (5COSC022W Coursework)
+Name: Lorion Surjith Ravidradasan
+ID: 21206696
+IIT ID : 20230198
+
+## 1. API Overview
+This project implements a JAX-RS RESTful API for Smart Campus Room and Sensor Management.
+
+Core resources:
+- Room
+- Sensor
+- SensorReading
+
+Base URL:
+- http://localhost:8080/api/v1
+
+Main collections:
+- /rooms
+- /sensors
+- /sensors/{sensorId}/readings
+
+This coursework includes:
+- Resource-based endpoint design
+- Query filtering (sensor type)
+- Sub-resource locator for readings
+- Custom exception classes and exception mappers
+- Global safety-net mapper for unexpected errors in case.
+
+## 1.1 Folder Structure 
+
+- src/main/java/com/smartcampusapi/config
+- src/main/java/com/smartcampusapi/dao
+- src/main/java/com/smartcampusapi/model
+- src/main/java/com/smartcampusapi/resource
+- src/main/java/com/smartcampusapi/exception
+- src/main/java/com/smartcampusapi/filter 
+- pom.xml
+- README.md 
+
+
+
+## 2. Build and Run
+
+### Instructions
+1. Open NetBeans. Do this "mvn clean package" if needed as not to run any other file
+2. File -> Open Project -> choose SmartCampusAPI folder.
+3. Wait for Maven dependencies to load.
+4. In Projects panel, expand Source Packages.
+5. Right click com.smartcampusapi.config.Main -> Run File.
+6. Confirm server starts at http://localhost:8080/api/v1/
+
+Sample curl Commands (Windows — curl.exe)
+
 ### Create a Room
 
-
-curl -X POST http://localhost:8080/api/v1/rooms \  -H "Content-Type: application/json" \  -d '{"id":"R1","name":"Lecture Theatre 1","capacity":120}'
-
+curl.exe -X POST "http://localhost:8080/api/v1/rooms" -H "Content-Type: application/json" -d "{\"id\":\"R1\",\"name\":\"Lecture Theatre 1\",\"capacity\":120}"
 
 ### Create a Sensor
 
-
-curl -X POST http://localhost:8080/api/v1/sensors \  -H "Content-Type: application/json" \  -d '{"id":"S1","type":"CO2","roomId":"R1","status":"ACTIVE","currentValue":0.0}'
-
+curl.exe -X POST "http://localhost:8080/api/v1/sensors" -H "Content-Type: application/json" -d "{\"id\":\"S1\",\"type\":\"CO2\",\"roomId\":\"R1\",\"status\":\"ACTIVE\",\"currentValue\":0.0}"
 
 ### Add a Sensor Reading
 
-
-curl -X POST http://localhost:8080/api/v1/sensors/S1/readings \  -H "Content-Type: application/json" \  -d '{"id":"SR1","value":23.5}'
+curl.exe -X POST "http://localhost:8080/api/v1/sensors/S1/readings" -H "Content-Type: application/json" -d "{\"id\":\"SR1\",\"value\":23.5}"
 
 ### List All Rooms
 
-curl http://localhost:8080/api/v1/rooms
+curl.exe "http://localhost:8080/api/v1/rooms"
 
 ### List All Sensors
 
-curl http://localhost:8080/api/v1/sensors
+curl.exe "http://localhost:8080/api/v1/sensors"
 
 ### Delete Sensor
 
-curl -X DELETE http://localhost:8080/api/v1/sensors/S1
+curl.exe -X DELETE "http://localhost:8080/api/v1/sensors/S1"
 
 ### Delete Room
 
-curl -X DELETE http://localhost:8080/api/v1/rooms/R1
+curl.exe -X DELETE "http://localhost:8080/api/v1/rooms/R1"
 
 
 ## 3.1 Postman Testing
@@ -129,7 +177,7 @@ Adding hypermedia controls to a response enables API consumers to programmatical
 
 ### Part 3.2: Query Parameters vs. Path Segments for Filtering
 
- Query parameters are the most natural choice for filtering collections. When asking for a subset of resources that are already represented by another resource, a client is essentially querying an existing resource collection. E.g., GET /sensors?type=CO2. The latter alternative of path segments would more accurately identify a fixed sub-resource, such as /rooms/{id}/sensors. This query-parameter approach will remain more extendable than a path-segment based one if additional filters needed.
+ Query parameters are the most natural choice for filtering collections. When asking for a subset of resources that are already represented by another resource, a client is essentially querying an existing resource collection. E.g., GET /sensors?type=CO2&limit=50. The latter alternative of path segments would more accurately identify a fixed sub-resource, such as /rooms/{id}/sensors. This query-parameter approach will remain more extendable than a path-segment based one if additional filters needed.
 
 ### Part 4.1: Benefits of sub-resource locators
 
@@ -142,3 +190,5 @@ Adding hypermedia controls to a response enables API consumers to programmatical
 ### Part 5.4: Risk of exposing stack traces in a response
 
  Full stack traces provide very detailed information about the server implementation which could be very helpful to a potential attacker to craft malicious requests targeting your API. Stack traces must only be exposed in development environment, not in production; preferably as logs that only authorized persons have access to. Including a transaction-id in the response error will help technical support to locate full stack trace in logs.
+
+
