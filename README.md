@@ -73,11 +73,11 @@ Main collections:
 - /sensors/{sensorId}/readings
 
 This coursework includes:
-- Resource-based endpoint design
+- Resource based endpoint design
 - Query filtering (sensor type)
 - Sub-resource locator for readings
 - Custom exception classes and exception mappers
-- Global safety-net mapper for unexpected errors in case.
+- Global safety net mapper for unexpected errors in case.
 
 ## 1.1 Folder Structure 
 
@@ -157,7 +157,7 @@ Smart Campus API - Technical Report (5COSC022W)
 
 ### Part 1.1: Lifecycle of JAX-RS resources
 
-A JAX-RS implementation typically instantiates resource classes per request rather than registering them as a singleton in the Application scope. Therefore, resource classes have to be thread-safe: data mutable on the resource itself would cause race conditions. Any state shared between requests has to be stored in distinct components such as DAOs or Services which were explicitly made concurrent. The data-access layer uses concurrent data-structures, preserving data-consistency across concurrent requests without the need for complex request handling logic.
+A JAX-RS implementation typically instantiates resource classes per request rather than registering them as a singleton in the Application scope. Therefore, resource classes have to be thread-safe: data mutable on the resource itself would cause race conditions. Any state shared between requests has to be stored in distinct components such as DAOs or Services which were explicitly made concurrent. The data access layer uses concurrent data structures, preserving data-consistency across concurrent requests without the need for complex request handling logic.
 
 ### Part 1.2: Hypermedia (HATEOAS)
 
